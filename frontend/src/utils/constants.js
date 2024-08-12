@@ -1,4 +1,4 @@
-export const HOST = "http://localhost:8000";
+export const HOST = "https://tawk-server.onrender.com";
 
 export const AUTH_ROUTES="/api/auth";
 
