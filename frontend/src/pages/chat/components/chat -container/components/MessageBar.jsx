@@ -43,11 +43,23 @@ function MessageBar() {
       // console.log(file);
 
       if (file) {
+        const accessToken = userInfo.accessToken;
+        // console.log("accessToken:", accessToken);
         const formData = new FormData();
         formData.append("file", file);
-        const response = await apiClient.post(UPLOAD_FILE_ROUTE, formData, {
-          withCredentials: true,
-        });
+        const response = await apiClient.post(
+          UPLOAD_FILE_ROUTE,
+          formData,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              // "Content-Type": "application/json",
+            },
+          },
+          {
+            withCredentials: true,
+          }
+        );
 
         // console.log("file here:", response);
         if (response.status === 200 && response.data) {
@@ -67,7 +79,7 @@ function MessageBar() {
               content: undefined,
               messageType: "file",
               fileUrl: response.data.data.file,
-              channelId: selectedChatData._id,
+              groupId: selectedChatData._id,
             });
           }
 

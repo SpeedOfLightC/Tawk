@@ -19,14 +19,24 @@ function ProfileInfo() {
 
   const handleLogOut = async () => {
     try {
+      const accessToken = userInfo.accessToken;  
+      // console.log(accessToken, "accessToken");
+          
       const response = await apiClient.post(
         LOGOUT_ROUTE,
         {},
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        },
         { withCredentials: true }
       );
 
       if (response.status === 200) {
         setUserInfo(null);
+        localStorage.setItem("accessToken", null);
         navigate("/auth");
         toast.success("Logged out successfully");
       }

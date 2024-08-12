@@ -14,8 +14,6 @@ import { useAppStore } from "./store";
 import apiClient from "./lib/api-client";
 import { GET_USER_INFO } from "./utils/constants";
 
-
-
 const PrivateRoute = ({ children }) => {
   const { userInfo } = useAppStore();
   const isAuthenticated = !!userInfo;
@@ -28,57 +26,77 @@ const AuthRoute = ({ children }) => {
   return !isAuthenticated ? children : <Navigate to="/chat" />;
 };
 
-
 function App() {
-
   const { userInfo, setUserInfo } = useAppStore();
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const getUserData = async () => {
       try {
-        const response = await apiClient.get(GET_USER_INFO, { withCredentials: true });
+        const accessToken = localStorage.getItem("accessToken");
+        const response = await apiClient.get(
+          GET_USER_INFO,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              "Content-Type": "application/json",
+            },
+          },
+          { withCredentials: true }
+        );
         // console.log(response);
-        if(response.status === 200 && response.data.data._id) {
-          setUserInfo(response.data.data)
-        }
-        else {
-          setUserInfo(undefined)
+        if (response.status === 200 && response.data.data._id) {
+          setUserInfo({...response.data.data, accessToken});
+        } else {
+          setUserInfo(undefined);
         }
       } catch (error) {
-        setUserInfo(undefined)
+        setUserInfo(undefined);
         // console.log(error);
       } finally {
         setLoading(false);
       }
     };
 
-    if(!userInfo) {
+    if (!userInfo) {
       getUserData();
-    }
-    else {
+    } else {
       setLoading(false);
     }
+  }, [userInfo]);
 
-  }, [userInfo])
-
-  if(loading) {
-    return <div>Loading...</div>
+  if (loading) {
+    return <div>Loading...</div>;
   }
 
   return (
     <>
       <BrowserRouter>
         <Routes>
-          <Route path="/auth" element={<AuthRoute>
-            <Auth />
-          </AuthRoute>} />
-          <Route path="/chat" element={<PrivateRoute>
-            <Chat />
-          </PrivateRoute>} />
-          <Route path="/profile" element={<PrivateRoute>
-            <Profile />
-          </PrivateRoute>} />
+          <Route
+            path="/auth"
+            element={
+              <AuthRoute>
+                <Auth />
+              </AuthRoute>
+            }
+          />
+          <Route
+            path="/chat"
+            element={
+              <PrivateRoute>
+                <Chat />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <PrivateRoute>
+                <Profile />
+              </PrivateRoute>
+            }
+          />
           <Route path="*" element={<Navigate to="/auth" />} />
         </Routes>
       </BrowserRouter>

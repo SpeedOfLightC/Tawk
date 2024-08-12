@@ -5,9 +5,10 @@ import { toast } from "sonner";
 import ContactsContainer from "./components/contacts-container";
 import EmptyChatContainer from "./components/empty-chat-container";
 import ChatContainer from "./components/chat -container";
+import { GET_USER_INFO } from "@/utils/constants";
 
 function Chat() {
-  const { userInfo, selectedChatType } = useAppStore();
+  const { userInfo, setUserInfo, selectedChatType } = useAppStore();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -20,9 +21,11 @@ function Chat() {
   return (
     <div className="flex h-[100vh] text-white overflow-hidden">
       <ContactsContainer />
-      {
-        selectedChatType === undefined ? <EmptyChatContainer /> : <ChatContainer />
-      }
+      {selectedChatType === undefined ? (
+        <EmptyChatContainer />
+      ) : (
+        <ChatContainer />
+      )}
     </div>
   );
 }

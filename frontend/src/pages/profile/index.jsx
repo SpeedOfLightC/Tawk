@@ -9,7 +9,12 @@ import { Input } from "../../components/ui/input";
 // import { colors, getColor } from "@/lib/utils";
 import { Button } from "../../components/ui/button";
 import apiClient from "@/lib/api-client";
-import { ADD_PROFILE_IMAGE_ROUTE, HOST, REMOVE_PROFILE_IMAGE_ROUTE, UPDATE_PROFILE_ROUTE } from "@/utils/constants";
+import {
+  ADD_PROFILE_IMAGE_ROUTE,
+  HOST,
+  REMOVE_PROFILE_IMAGE_ROUTE,
+  UPDATE_PROFILE_ROUTE,
+} from "@/utils/constants";
 import { toast } from "sonner";
 
 function Profile() {
@@ -28,7 +33,7 @@ function Profile() {
       setlastname(userInfo.lastname);
       setSelectedColors(userInfo.color);
     }
-    if(userInfo.avatar) {
+    if (userInfo.avatar) {
       setImage(userInfo.avatar);
     }
   }, [userInfo]);
@@ -50,16 +55,23 @@ function Profile() {
     if (!validateProfile()) return;
 
     try {
+      const accessToken = userInfo.accessToken;
+
       const response = await apiClient.post(
         UPDATE_PROFILE_ROUTE,
         { firstname, lastname, selectedColors },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        },
         { withCredentials: true }
       );
 
-      
-
       if (response.status === 200 && response.data.data) {
-        setUserInfo({...response.data.data});
+        setUserInfo({ ...response.data.data, accessToken });
+        localStorage.setItem("accessToken", accessToken);
         toast.success(response.data.message);
         navigate("/chat");
       }
@@ -83,22 +95,32 @@ function Profile() {
   const handleImageChange = async (e) => {
     try {
       const file = e.target.files[0];
-      if(file) {
+      const accessToken = userInfo.accessToken;
+      if (file) {
         const formData = new FormData();
         formData.append("avatar", file);
 
         // console.log(formData);
 
-        const response = await apiClient.post(ADD_PROFILE_IMAGE_ROUTE, formData, {withCredentials: true})
+        const response = await apiClient.post(
+          ADD_PROFILE_IMAGE_ROUTE,
+          formData,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              "Content-Type": "application/json",
+            },
+          },
+          { withCredentials: true }
+        );
 
         // console.log("Response: ", response);
-        
 
-        if(response.status === 200) {
-          if(response.data.data.avatar) {
-            setUserInfo({...userInfo, avatar: response.data.data.avatar})
-            toast.success("Image updated successfully")
-            if(userInfo.profileSetup === true) {
+        if (response.status === 200) {
+          if (response.data.data.avatar) {
+            setUserInfo({ ...userInfo, avatar: response.data.data.avatar });
+            toast.success("Image updated successfully");
+            if (userInfo.profileSetup === true) {
               navigate("/chat");
             }
           }
@@ -111,9 +133,21 @@ function Profile() {
 
   const handleDeleteImage = async (e) => {
     try {
-      const response = await apiClient.delete(REMOVE_PROFILE_IMAGE_ROUTE, { withCredentials: true })
-      if(response.status === 200) {
-        setUserInfo({...userInfo, avatar: null})
+      const accessToken = userInfo.accessToken;
+      const response = await apiClient.delete(
+        REMOVE_PROFILE_IMAGE_ROUTE,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        },
+        {
+          withCredentials: true,
+        }
+      );
+      if (response.status === 200) {
+        setUserInfo({ ...userInfo, avatar: null });
         toast.success("Image removed successfully");
         setImage(null);
       }

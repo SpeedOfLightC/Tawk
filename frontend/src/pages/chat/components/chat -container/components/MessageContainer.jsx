@@ -1,7 +1,11 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import apiClient from "@/lib/api-client";
 import { useAppStore } from "@/store";
-import { GET_GROUP_MESSAGES_ROUTE, GET_MESSAGES_ROUTE, MESSAGES_ROUTES } from "@/utils/constants";
+import {
+  GET_GROUP_MESSAGES_ROUTE,
+  GET_MESSAGES_ROUTE,
+  MESSAGES_ROUTES,
+} from "@/utils/constants";
 import moment from "moment";
 import React, { useEffect, useRef, useState } from "react";
 
@@ -21,9 +25,16 @@ function MessageContainer() {
   useEffect(() => {
     const getMessages = async () => {
       try {
+        const accessToken = userInfo.accessToken;
         const response = await apiClient.post(
           GET_MESSAGES_ROUTE,
           { id: selectedChatData._id },
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              "Content-Type": "application/json",
+            },
+          },
           { withCredentials: true }
         );
 
@@ -38,8 +49,15 @@ function MessageContainer() {
 
     const getGroupMessages = async () => {
       try {
+        const accessToken = userInfo.accessToken;
         const response = await apiClient.get(
           `${GET_GROUP_MESSAGES_ROUTE}/${selectedChatData._id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              "Content-Type": "application/json",
+            },
+          },
           { withCredentials: true }
         );
 
@@ -50,13 +68,12 @@ function MessageContainer() {
       } catch (error) {
         console.log(error);
       }
-    }
+    };
 
     if (selectedChatData._id) {
       if (selectedChatType === "contact") {
         getMessages();
-      }
-      else if (selectedChatType === "group") {
+      } else if (selectedChatType === "group") {
         getGroupMessages();
       }
     }

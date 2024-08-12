@@ -27,6 +27,7 @@ function NewDm() {
     selectedChatData,
     setSelectedChatType,
     setSelectedChatData,
+    userInfo,
   } = useAppStore();
   const [openNewContactModal, setOpenNewContactModal] = useState(false);
   const [searchedContacts, setSearchedContacts] = useState([]);
@@ -38,9 +39,16 @@ function NewDm() {
         return;
       }
 
+      const accessToken = userInfo.accessToken;
       const response = await apiClient.post(
         SEARCH_CONTACTS_ROUTE,
         { searchTerm },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        },
         { withCredentials: true }
       );
 

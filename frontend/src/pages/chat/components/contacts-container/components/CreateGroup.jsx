@@ -33,6 +33,7 @@ function CreateGroup() {
     selectedChatData,
     setSelectedChatType,
     setSelectedChatData,
+    userInfo,
     addGroup,
   } = useAppStore();
   const [newGroupModal, setNewGroupModal] = useState(false);
@@ -43,9 +44,19 @@ function CreateGroup() {
 
   useEffect(() => {
     const getData = async () => {
-      const response = await apiClient.get(GET_ALL_CONTACTS_ROUTE, {
-        withCredentials: true,
-      });
+      const accessToken = userInfo.accessToken;
+      const response = await apiClient.get(
+        GET_ALL_CONTACTS_ROUTE,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        },
+        {
+          withCredentials: true,
+        }
+      );
       setAllContacts(response.data.data);
     };
 
@@ -54,6 +65,7 @@ function CreateGroup() {
 
   const createGroup = async () => {
     try {
+      const accessToken = userInfo.accessToken;
       if (groupName.length > 0 && selectedContacts.length > 0) {
         const response = await apiClient.post(
           CREATE_GROUP_ROUTE,
@@ -61,14 +73,20 @@ function CreateGroup() {
             name: groupName,
             members: selectedContacts.map((contact) => contact.value),
           },
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              "Content-Type": "application/json",
+            },
+          },
           { withCredentials: true }
         );
 
-        if(response.status === 201) {
-            setGroupName("");
-            setSelectedContacts([]);
-            setNewGroupModal(false);
-            addGroup(response.data.data);
+        if (response.status === 201) {
+          setGroupName("");
+          setSelectedContacts([]);
+          setNewGroupModal(false);
+          addGroup(response.data.data);
         }
       }
     } catch (error) {

@@ -15,108 +15,110 @@ import { LOGIN_ROUTE, SIGNUP_ROUTE } from "@/utils/constants";
 import { useNavigate } from "react-router-dom";
 import { useAppStore } from "@/store";
 
-
 function Auth() {
   const navigate = useNavigate();
-  const { setUserInfo } = useAppStore();
+  const { userInfo, setUserInfo } = useAppStore();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
   const validateSignup = () => {
-    if(!email.length) {
+    if (!email.length) {
       toast.error("Email is required");
       return false;
     }
-    if(!email.includes("@")) {
+    if (!email.includes("@")) {
       toast.error("Invalid Email");
       return false;
     }
-    if(!password.length) {
+    if (!password.length) {
       toast.error("Password is required");
       return false;
     }
-    if(password != confirmPassword) {
+    if (password != confirmPassword) {
       toast.error("Passwords do not match");
       return false;
     }
 
     return true;
-  }
+  };
 
   const validateLogin = () => {
-    if(!email.length) {
+    if (!email.length) {
       toast.error("Email is required");
       return false;
     }
-    if(!email.includes("@")) {
+    if (!email.includes("@")) {
       toast.error("Invalid Email");
       return false;
     }
-    if(!password.length) {
+    if (!password.length) {
       toast.error("Password is required");
       return false;
     }
 
     return true;
-  }
+  };
 
   const handleLogin = async () => {
-    if(!validateLogin()) return;
+    if (!validateLogin()) return;
     try {
       const response = await apiClient.post(
-        LOGIN_ROUTE, 
-        { email, password }, 
-        { withCredentials: true }
-      )
-      console.log("response at login: ",response);
+        LOGIN_ROUTE,
+        { email, password }
+        // {
+        //   headers: {
+        //     "Content-Type": "application/json"
+        //   }
+        // },
+        // { withCredentials: true }
+      );
+      console.log("response at login: ", response);
       toast.success(response.data.message);
 
-      if(response.data.data.user._id) {
-        setUserInfo(response.data.data.user);
-        if(response.data.data.user.profileSetup) {
+      if (response.data.data.user._id) {
+        const accessToken = response.data.data.accessToken;
+        const refreshToken = response.data.data.refreshToken;
+        setUserInfo({ ...response.data.data.user, accessToken });
+        localStorage.setItem("accessToken", accessToken);
+
+        if (response.data.data.user.profileSetup) {
           navigate("/chat");
-        }
-        else {
+        } else {
           navigate("/profile");
         }
       }
-
     } catch (error) {
       // console.log(error);
       const htmlErrorString = error.response.data;
       const match = htmlErrorString.match(/Error: (.*?)<br>/);
 
-      if(match && match[1]) {
+      if (match && match[1]) {
         toast.error(match[1]);
-      } 
-      else {
+      } else {
         toast.error("Something Went Wrong");
       }
     }
   };
 
   const handleSignUp = async () => {
-    if(!validateSignup()) return;
+    if (!validateSignup()) return;
 
     try {
-      const response = await apiClient.post(SIGNUP_ROUTE, { email, password})
+      const response = await apiClient.post(SIGNUP_ROUTE, { email, password });
       // console.log(response);
       toast.success(response.data.message);
-      
-    } catch (error) {      
+    } catch (error) {
       // console.log(error);
       const htmlErrorString = error.response.data;
       const match = htmlErrorString.match(/Error: (.*?)<br>/);
 
-      if(match && match[1]) {
+      if (match && match[1]) {
         toast.error(match[1]);
-      } 
-      else {
+      } else {
         toast.error("Something Went Wrong");
       }
     }
-    
   };
 
   return (

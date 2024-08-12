@@ -2,21 +2,39 @@ import React, { useEffect } from "react";
 import ProfileInfo from "./components/ProfileInfo";
 import NewDm from "./components/NewDm";
 import apiClient from "@/lib/api-client";
-import { GET_DM_CONTACTS_ROUTE, GET_USER_GROUPS_ROUTE } from "@/utils/constants";
+import {
+  GET_DM_CONTACTS_ROUTE,
+  GET_USER_GROUPS_ROUTE,
+} from "@/utils/constants";
 import { useAppStore } from "@/store";
 import ContactList from "@/components/ContactList";
 import CreateGroup from "./components/CreateGroup";
 
 function ContactsContainer() {
-  const { directMessagesContacts, setDirectMessagesContacts, groups, setGroups } =
-    useAppStore();
+  const {
+    directMessagesContacts,
+    setDirectMessagesContacts,
+    groups,
+    setGroups,
+    userInfo
+  } = useAppStore();
 
   useEffect(() => {
     const getContacts = async () => {
       try {
-        const response = await apiClient.get(GET_DM_CONTACTS_ROUTE, {
-          withCredentials: true,
-        });
+        const accessToken = userInfo.accessToken;
+        const response = await apiClient.get(
+          GET_DM_CONTACTS_ROUTE,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              "Content-Type": "application/json",
+            },
+          },
+          {
+            withCredentials: true,
+          }
+        );
 
         // console.log(response);
 
@@ -30,9 +48,19 @@ function ContactsContainer() {
 
     const getGroups = async () => {
       try {
-        const response = await apiClient.get(GET_USER_GROUPS_ROUTE, {
-          withCredentials: true,
-        });
+        const accessToken = userInfo.accessToken;
+        const response = await apiClient.get(
+          GET_USER_GROUPS_ROUTE,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              "Content-Type": "application/json",
+            },
+          },
+          {
+            withCredentials: true,
+          }
+        );
 
         if (response.data.data) {
           setGroups(response.data.data);
@@ -45,7 +73,6 @@ function ContactsContainer() {
     getContacts();
     getGroups();
   }, []);
-
 
   return (
     <div className="relative md:w-[35vw] lg:w-[30vw] xl:w-[20vw] bg-[#1b1c24] border-r-2 border-[#2f303b] w-full">

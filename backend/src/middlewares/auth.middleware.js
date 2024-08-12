@@ -28,12 +28,18 @@ export const verifyRfreshToken = async (req, res, next) => {
 
 export const verifyAccessToken = asyncHandler(async (req, res, next) => {
     try {
-        const token = req.cookies["accessToken"];
+        // console.log("req:",  req.headers);
+
+        // console.log("req at logout:", req.headers.authorization);
+        
+        const token = req.headers.authorization.replace("Bearer ", "");
         // console.log("Token: ", token);
         if (!token) {
             // console.log("Token: ", token);
-            throw new ApiError(401, "Unauthorized Request");
+            throw new ApiError(401, "Unauthorized Request...");
         }
+
+        // console.log("I AM HERE");
 
         const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)
 
@@ -44,7 +50,7 @@ export const verifyAccessToken = asyncHandler(async (req, res, next) => {
         if (!user) {
             throw new ApiError(401, "Unauthorized Request");
         }
-        
+
         req.user = user;
         next();
     } catch (error) {
